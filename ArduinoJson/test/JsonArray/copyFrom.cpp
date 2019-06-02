@@ -1,66 +1,66 @@
-// Copyright Benoit Blanchon 2014-2017
+// ArduinoJson - arduinojson.org
+// Copyright Benoit Blanchon 2014-2018
 // MIT License
-//
-// Arduino JSON library
-// https://bblanchon.github.io/ArduinoJson/
-// If you like this project, please add a star!
 
 #include <ArduinoJson.h>
 #include <catch.hpp>
 
 TEST_CASE("JsonArray::copyFrom()") {
   SECTION("OneDimension") {
-    DynamicJsonBuffer jsonBuffer;
-    JsonArray& array = jsonBuffer.createArray();
+    DynamicJsonDocument doc(4096);
+    JsonArray array = doc.to<JsonArray>();
     char json[32];
     int source[] = {1, 2, 3};
 
     bool ok = array.copyFrom(source);
     REQUIRE(ok);
 
-    array.printTo(json, sizeof(json));
+    serializeJson(array, json, sizeof(json));
     REQUIRE(std::string("[1,2,3]") == json);
   }
 
-  SECTION("OneDimension_JsonBufferTooSmall") {
+  SECTION("OneDimension_MemoryPoolTooSmall") {
     const size_t SIZE = JSON_ARRAY_SIZE(2);
-    StaticJsonBuffer<SIZE> jsonBuffer;
-    JsonArray& array = jsonBuffer.createArray();
+    StaticJsonDocument<SIZE> doc;
+    JsonArray array = doc.to<JsonArray>();
     char json[32];
     int source[] = {1, 2, 3};
 
     bool ok = array.copyFrom(source);
     REQUIRE_FALSE(ok);
 
-    array.printTo(json, sizeof(json));
+    serializeJson(array, json, sizeof(json));
     REQUIRE(std::string("[1,2]") == json);
   }
 
   SECTION("TwoDimensions") {
-    DynamicJsonBuffer jsonBuffer;
-    JsonArray& array = jsonBuffer.createArray();
+    DynamicJsonDocument doc(4096);
+    JsonArray array = doc.to<JsonArray>();
     char json[32];
     int source[][3] = {{1, 2, 3}, {4, 5, 6}};
 
     bool ok = array.copyFrom(source);
     REQUIRE(ok);
 
-    array.printTo(json, sizeof(json));
+    serializeJson(array, json, sizeof(json));
     REQUIRE(std::string("[[1,2,3],[4,5,6]]") == json);
   }
 
-  SECTION("TwoDimensions_JsonBufferTooSmall") {
+  SECTION("TwoDimensions_MemoryPoolTooSmall") {
     const size_t SIZE =
         JSON_ARRAY_SIZE(2) + JSON_ARRAY_SIZE(3) + JSON_ARRAY_SIZE(2);
-    StaticJsonBuffer<SIZE> jsonBuffer;
-    JsonArray& array = jsonBuffer.createArray();
-    char json[32];
+    StaticJsonDocument<SIZE> doc;
+    JsonArray array = doc.to<JsonArray>();
+    char json[32] = "";
     int source[][3] = {{1, 2, 3}, {4, 5, 6}};
 
-    bool ok = array.copyFrom(source);
-    REQUIRE_FALSE(ok);
+    CAPTURE(SIZE)
 
-    array.printTo(json, sizeof(json));
+    bool ok = array.copyFrom(source);
+    CAPTURE(doc.memoryUsage());
+    CHECK_FALSE(ok);
+
+    serializeJson(array, json, sizeof(json));
     REQUIRE(std::string("[[1,2,3],[4,5]]") == json);
   }
 }

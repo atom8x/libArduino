@@ -1,19 +1,18 @@
-// Copyright Benoit Blanchon 2014-2017
+// ArduinoJson - arduinojson.org
+// Copyright Benoit Blanchon 2014-2018
 // MIT License
-//
-// Arduino JSON library
-// https://bblanchon.github.io/ArduinoJson/
-// If you like this project, please add a star!
 
 #include <ArduinoJson.h>
 #include <catch.hpp>
 
 TEST_CASE("JsonArray::copyTo()") {
-  DynamicJsonBuffer jsonBuffer;
+  DynamicJsonDocument doc(4096);
 
   SECTION("BiggerOneDimensionIntegerArray") {
     char json[] = "[1,2,3]";
-    JsonArray& array = jsonBuffer.parseArray(json);
+    DeserializationError err = deserializeJson(doc, json);
+    REQUIRE(err == DeserializationError::Ok);
+    JsonArray array = doc.as<JsonArray>();
 
     int destination[4] = {0};
     size_t result = array.copyTo(destination);
@@ -27,7 +26,9 @@ TEST_CASE("JsonArray::copyTo()") {
 
   SECTION("SmallerOneDimensionIntegerArray") {
     char json[] = "[1,2,3]";
-    JsonArray& array = jsonBuffer.parseArray(json);
+    DeserializationError err = deserializeJson(doc, json);
+    REQUIRE(err == DeserializationError::Ok);
+    JsonArray array = doc.as<JsonArray>();
 
     int destination[2] = {0};
     size_t result = array.copyTo(destination);
@@ -40,7 +41,9 @@ TEST_CASE("JsonArray::copyTo()") {
   SECTION("TwoOneDimensionIntegerArray") {
     char json[] = "[[1,2],[3],[4]]";
 
-    JsonArray& array = jsonBuffer.parseArray(json);
+    DeserializationError err = deserializeJson(doc, json);
+    REQUIRE(err == DeserializationError::Ok);
+    JsonArray array = doc.as<JsonArray>();
 
     int destination[3][2] = {{0}};
     array.copyTo(destination);
